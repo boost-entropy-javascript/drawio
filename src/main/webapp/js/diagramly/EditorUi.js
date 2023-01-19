@@ -164,7 +164,8 @@
 			{
 				if (message == EditorUi.lastErrorMessage || (message != null && url != null &&
 					((message.indexOf('Script error') != -1) || (message.indexOf('extension:') != -1))) ||
-					(err != null && err.stack != null && err.stack.indexOf('extension:') != -1))
+					(err != null && err.stack != null && ((err.stack.indexOf('extension:') != -1) ||
+					(err.stack.indexOf('<anonymous>:') != -1))))
 				{
 					// TODO log external domain script failure "Script error." is
 					// reported when the error occurs in a script that is hosted
@@ -1106,6 +1107,7 @@
 				if (uncompressed)
 				{
 					var diagramNode = node.ownerDocument.createElement('diagram');
+					diagramNode.setAttribute('name', mxResources.get('pageWithNumber', [1]));
 					diagramNode.setAttribute('id', Editor.guid());
 					diagramNode.appendChild(node);
 					
@@ -1127,6 +1129,7 @@
 					else
 					{
 						var diagramNode = node.ownerDocument.createElement('diagram');
+						diagramNode.setAttribute('name', mxResources.get('pageWithNumber', [1]));
 						diagramNode.setAttribute('id', Editor.guid());
 						mxUtils.setTextContent(diagramNode, data);
 						
@@ -1836,8 +1839,8 @@
 			if (node != null && node.nodeName == 'mxfile')
 			{
 				var nodes = node.getElementsByTagName('diagram');
-	
-				if (nodes.length > 1 || (nodes.length == 1 && nodes[0].hasAttribute('name')))
+
+				if (nodes.length > 0)
 				{
 					var selectedPage = null;
 					this.fileNode = node;
@@ -8978,7 +8981,7 @@
 										    							1, Math.round(w * s)), Math.max(1, Math.round(h * s)), file.name);
 																	
 										    						// Hack to fix width and height asynchronously
-										    						if (isNaN(w) || isNaN(h))
+										    						if (cells != null && (isNaN(w) || isNaN(h)))
 										    						{
 										    							var img = new Image();
 										    							
@@ -8989,7 +8992,7 @@
 										    								
 										    								cells[0].geometry.width = w;
 										    								cells[0].geometry.height = h;
-										    								
+																			
 										    								svgRoot.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
 										    								data = Editor.createSvgDataUri(mxUtils.getXml(svgRoot));
 										    								
@@ -11015,27 +11018,41 @@
 		{
 			if (graph.isEnabled() && !graph.isCellLocked(graph.getDefaultParent()))
 			{
-				textInput.innerHTML = '&nbsp;';
-				textInput.focus();
-				
-				if (evt.clipboardData != null)
+				try
 				{
-					this.pasteCells(evt, textInput, true, true);
-				}
-
-				if (!mxEvent.isConsumed(evt))
-				{
-					var x0 = graph.container.scrollLeft;
-					var y0 = graph.container.scrollTop;
-
-					window.setTimeout(mxUtils.bind(this, function()
+					textInput.innerHTML = '&nbsp;';
+					textInput.focus();
+					
+					if (evt.clipboardData != null)
 					{
-						// Workaround for Safari 16 scroll after paste
-						graph.container.scrollLeft = x0;
-						graph.container.scrollTop = y0;
+						this.pasteCells(evt, textInput, true, true);
+					}
 
-						this.pasteCells(evt, textInput, false, true);
-					}), 0);
+					if (!mxEvent.isConsumed(evt))
+					{
+						var x0 = graph.container.scrollLeft;
+						var y0 = graph.container.scrollTop;
+
+						window.setTimeout(mxUtils.bind(this, function()
+						{
+							try
+							{
+								// Workaround for Safari 16 scroll after paste
+								graph.container.scrollLeft = x0;
+								graph.container.scrollTop = y0;
+
+								this.pasteCells(evt, textInput, false, true);
+							}
+							catch (e)
+							{
+								this.handleError(e);
+							}
+						}), 0);
+					}
+				}
+				catch (e)
+				{
+					this.handleError(e);
 				}
 			}
 		}), true);
