@@ -178,9 +178,9 @@ Editor.fillStyles = [{val: 'auto', dispName: 'Auto'}, {val: 'hatch', dispName: '
 	{val: 'zigzag-line', dispName: 'ZigZag Line'}];
 
 /**
- * Graph themes for the format panel.
+ * List of supported custom themes.
  */
-Editor.themes = null;
+Editor.themes = [];
 
 /**
  * Specifies the image URL to be used for the transparent background.
@@ -1705,7 +1705,14 @@ PrintDialog.createPrintPreview = function(graph, scale, pf, border, x0, y0, auto
 	}
 	
 	preview.backgroundColor = bg;
-	
+
+	var getLinkForCellState = preview.getLinkForCellState;
+
+	preview.getLinkForCellState = function(state)
+	{
+		return graph.getAbsoluteUrl(getLinkForCellState.apply(this, arguments));
+	};
+
 	var writeHead = preview.writeHead;
 	
 	// Adds a border in the preview
