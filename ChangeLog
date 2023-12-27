@@ -1,3 +1,20 @@
+27-DEC-2023: 21.1.15
+
+- Fixes NPE of undefined function emfDone [drawio-4072]
+- Prints current version number in clear.html
+- Fixes dark mode not persisted in some cases [drawio-desktop-1540]
+
+27-DEC-2023: 21.1.14
+
+- Fixes this.isVisioFilename undefined in Editor.js
+- Fixes mxSettings is undefined [DID-10370]
+- Fixes NPE for minified freehand code in production build
+
+27-DEC-2023: 21.1.13
+
+- Fixes "Add tag" dialog title clipped [drawio-desktop-1537]
+- Increases maximumFileSizeToCacheInBytes to 10MB [DID-10317]
+
 26-DEC-2023: 21.1.12
 
 - Handles possible empty content in GitHub [drawio-4045]
