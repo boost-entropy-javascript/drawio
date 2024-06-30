@@ -6414,10 +6414,7 @@
 		
 		if (lightbox)
 		{
-			if (EditorUi.lightboxHost != 'https://viewer.diagrams.net' || urlParams['dev'] == '1')
-			{
-				params.push('lightbox=1');
-			}
+			params.push('lightbox=1');
 
 			if (linkTarget != 'auto')
 			{
@@ -6457,8 +6454,7 @@
 	{
 		var file = this.getCurrentFile();
 		params = this.createUrlParameters(linkTarget, linkColor,
-			lightbox && (file == null || file.constructor != window.DriveFile),
-			editLink, layers, params);
+			lightbox, editLink, layers, params);
 		var addTitle = true;
 		var data = '';
 
@@ -11772,7 +11768,6 @@
 			}), false);
 		}
 
-		graph.enableFlowAnimation = Editor.enableAnimations;
 		this.initPages();
 
 		// Embedded mode
@@ -11936,6 +11931,15 @@
 		
 		this.installSettings();
 
+		// Animations
+		this.addListener('enableAnimationsChanged', mxUtils.bind(this, function(sender, evt)
+		{
+			graph.enableFlowAnimation = Editor.enableAnimations;
+			graph.refresh();
+		}));
+
+		graph.enableFlowAnimation = Editor.enableAnimations;
+		
 		if (screen.width <= Editor.smallScreenWidth)
 		{
 			this.formatWidth = 0;
@@ -14470,6 +14474,23 @@
 				}));
 				
 				this.editor.autosave = mxSettings.getAutosave();
+			}
+
+			if (!this.editor.chromeless || this.editor.editable)
+			{
+				/**
+				 * Persists animations switch.
+				 */
+				if (mxSettings.settings.enableAnimations != null)
+				{
+					Editor.enableAnimations = mxSettings.settings.enableAnimations;
+				}
+				
+				this.addListener('enableAnimationsChanged', mxUtils.bind(this, function(sender, evt)
+				{
+					mxSettings.settings.enableAnimations = Editor.enableAnimations;
+					mxSettings.save();
+				}));
 			}
 			
 			if (this.sidebar != null)
